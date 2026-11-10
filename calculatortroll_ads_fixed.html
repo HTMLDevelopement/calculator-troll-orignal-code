@@ -1,0 +1,548 @@
+=<html lang="en"><head>
+  <meta name="google-adsense-account" content="ca-pub-7439305953929290">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A free online calculator with normal and choose-answer modes, a smooth animated background, and hidden fun features.">
+  <title>Smooth Wave Calculator – Secret Mario</title>
+    <style>
+.secret-button {
+  position: fixed;
+  left: -65px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9999;
+
+  padding: 15px 18px;
+  background: #202044;
+  color: white;
+  border: 2px solid #4776e6;
+  border-left: none;
+  border-radius: 0 14px 14px 0;
+
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+  font-weight: bold;
+  text-decoration: none;
+
+  box-shadow: 0 4px 15px #0003;
+  opacity: 0;
+  transition: left 0.25s ease, opacity 0.25s ease;
+}
+
+/* Reveal when hovering near the left edge */
+body:hover .secret-button:hover,
+.secret-button:focus-visible {
+  left: 0;
+  opacity: 1;
+}
+
+/* Keep a tiny invisible hover trigger at the left edge */
+body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 40%;
+  width: 12px;
+  height: 20%;
+  z-index: 9998;
+}
+
+body:has(.secret-button:hover) .secret-button {
+  left: 0;
+  opacity: 1;
+}
+</style>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: Arial, sans-serif;
+      background: #0f1020;
+      color: white;
+    }
+    .wave-bg {
+      position: fixed;
+      inset: -50%;
+      background: radial-gradient(circle at center, #667eea, #764ba2, #0f1020);
+      animation: waveMove 22s linear infinite;
+      z-index: -2;
+      pointer-events: none;
+      transition: transform 0.1s ease-out;
+    }
+    @keyframes waveMove {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(-20%, -10%); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .top-area {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 16px 50px;
+      position: relative;
+    }
+    .site-heading {
+      width: min(100%, 600px);
+      text-align: center;
+      margin: 0 0 18px;
+    }
+    .site-heading h1 { font-size: clamp(1.5rem, 5vw, 2.2rem); margin: 0 0 8px; }
+    .site-heading p { color: #e0e3ff; margin: 0; line-height: 1.55; }
+
+    .calculator {
+      background: rgba(30, 30, 60, 0.94);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      width: min(320px, 100%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+    .mode-switch { display: flex; gap: 6px; margin-bottom: 12px; }
+    .mode-switch button {
+      flex: 1; padding: 8px; border: none; border-radius: 10px;
+      cursor: pointer; background: #2d2d55; color: white;
+    }
+    .mode-switch button.active { background: #667eea; }
+    .display {
+      background: #000; padding: 16px; border-radius: 12px;
+      font-size: 26px; text-align: right; margin-bottom: 12px;
+      overflow-x: auto; min-height: 62px;
+    }
+    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .buttons button {
+      padding: 16px 8px; font-size: 18px; border-radius: 12px; border: none;
+      cursor: pointer; background: #2d2d55; color: white;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .buttons button:hover { background: #3e3e7a; transform: scale(1.05); }
+    .equal { grid-column: span 2; background: #667eea !important; }
+    .choice-area { display: none; margin-top: 10px; }
+    .choice-area button {
+      width: 100%; margin-top: 6px; padding: 10px; border-radius: 10px;
+      border: none; cursor: pointer; background: #444; color: white;
+    }
+
+    .secret-hotspot { position: fixed; top: 0; left: 0; width: 50px; height: 50px; z-index: 5; }
+    .secret-btn {
+      position: fixed; top: 10px; left: 10px; padding: 6px 10px; border-radius: 8px;
+      border: none; background: #ff4d4d; color: white; cursor: pointer;
+      display: none; z-index: 6;
+    }
+    .right-btn {
+      position: fixed; right: 10px; top: 50%; transform: translateY(-50%);
+      padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer;
+      background: #00c2a8; color: #002b2b; font-weight: bold; z-index: 6;
+    }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: none; justify-content: center; align-items: center;
+      z-index: 10010; padding: 16px; overflow-y: auto;
+    }
+    .modal {
+      background: #1e1e2f; padding: 20px; border-radius: 16px;
+      width: min(360px, 100%); text-align: center; max-height: 90vh; overflow-y: auto;
+    }
+    .modal input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: none; }
+    .modal button { margin-top: 10px; padding: 10px; width: 100%; border-radius: 8px; border: none; cursor: pointer; background: #667eea; color: white; }
+    video { width: 100%; border-radius: 12px; margin-top: 10px; }
+    .fake-card {
+      margin-top: 10px; padding: 12px; border-radius: 12px;
+      background: #0b0b18; text-align: left; font-family: monospace; font-size: 14px;
+    }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #ffcc00; color: #000; font-weight: bold; font-size: 12px; }
+
+    .info-section {
+      width: min(1000px, calc(100% - 32px));
+      margin: 0 auto 28px;
+      padding: clamp(20px, 4vw, 34px);
+      background: rgba(17, 18, 43, 0.94);
+      border: 1px solid rgba(180, 190, 255, 0.22);
+      border-radius: 20px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.24);
+      line-height: 1.7;
+    }
+    .info-section h2 { margin-top: 0; font-size: clamp(1.4rem, 4vw, 2rem); }
+    .info-section h3 { margin-top: 26px; color: #c7ceff; }
+    .info-section p, .info-section li { color: #e2e5ff; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 18px; }
+    .info-card { background: #202144; border-radius: 14px; padding: 16px; border: 1px solid #343765; }
+    .info-card h3 { margin: 0 0 8px; }
+    .tip { padding: 12px 14px; border-left: 4px solid #667eea; background: #171832; border-radius: 8px; }
+    .site-footer { text-align: center; color: #d8dcff; padding: 10px 16px 26px; font-size: 13px; }
+    .site-footer a { color: #c7ceff; }
+    .secret-button {
+      position: fixed; left: -65px; top: 50%; transform: translateY(-50%);
+      z-index: 9999; padding: 15px 18px; background: #202044; color: white;
+      border: 2px solid #4776e6; border-left: none; border-radius: 0 14px 14px 0;
+      font-size: 17px; font-weight: bold; text-decoration: none;
+      box-shadow: 0 4px 15px #0003; opacity: 0;
+      transition: left 0.25s ease, opacity 0.25s ease;
+    }
+    .secret-button.revealed, .secret-button:hover, .secret-button:focus-visible { left: 0; opacity: 1; }
+    .edge-trigger { position: fixed; left: 0; top: 40%; width: 12px; height: 20%; z-index: 9998; }
+    .fullscreen-overlay {
+      display: none; position: fixed; inset: 0; z-index: 10000; background: #000;
+    }
+    .fullscreen-overlay iframe { width: 100%; height: 100%; border: 0; }
+    .exit-btn {
+      position: absolute; top: 12px; left: 12px; z-index: 10001;
+      padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer;
+    }
+    #emuClose { left: auto; right: 12px; }
+    .corner-btn {
+      display: none; position: fixed; z-index: 999; padding: 10px 14px;
+      border-radius: 12px; border: none; cursor: pointer; font-weight: 700;
+      color: #fff; background: #30335f;
+    }
+    #noclipBtn { top: 20px; right: 20px; }
+    #emuBtn { bottom: 20px; left: 20px; }
+    #prankxBtn { display: block; right: 20px; bottom: 20px; background: #e4e8ff; color: #171832; }
+    .credit { position: fixed; bottom: 0; left: 0; margin: 0; padding: 5px 8px; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; z-index: 10002; border-top-right-radius: 8px; }
+    @media (max-width: 480px) {
+      .top-area { padding-top: 55px; }
+      .right-btn { right: 6px; padding: 9px 10px; font-size: 12px; }
+      .calculator { padding: 14px; }
+      .buttons { gap: 7px; }
+      .buttons button { padding: 14px 6px; }
+      .info-section { width: calc(100% - 20px); }
+      .credit { max-width: 70%; }
+    }
+  </style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7439305953929290" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="wave-bg" id="wave" style="transform: translate(14.8347px, -5.90744px);"></div>
+
+  <div class="secret-hotspot" id="hotspot" aria-label="Secret hover area"></div>
+  <button class="secret-btn" id="secretBtn" title="Secret button: click to open the password prompt" style="display: none;">SECRET</button>
+  <button class="right-btn" id="rightBtn" title="Click to show a clearly labeled fake prank">CLICK</button>
+
+  <main>
+    <section class="top-area" aria-labelledby="pageTitle">
+      <header class="site-heading">
+        <h1 id="pageTitle">Smooth Wave Calculator</h1>
+        <p>A free calculator with a choice-answer challenge and a few hidden surprises. Scroll down for instructions and examples.</p>
+      </header>
+
+      <div class="calculator" aria-label="Calculator">
+        <div class="mode-switch">
+          <button id="normalBtn" class="active" title="Use the calculator normally">Normal</button>
+          <button id="choiceBtn" title="Choose the correct answer from three options">Choose Answer</button>
+        </div>
+        <div class="display" id="display" aria-live="polite">0</div>
+        <div class="buttons">
+          <button onclick="add('7')" title="Enter 7">7</button>
+          <button onclick="add('8')" title="Enter 8">8</button>
+          <button onclick="add('9')" title="Enter 9">9</button>
+          <button onclick="add('/')" title="Divide">÷</button>
+          <button onclick="add('4')" title="Enter 4">4</button>
+          <button onclick="add('5')" title="Enter 5">5</button>
+          <button onclick="add('6')" title="Enter 6">6</button>
+          <button onclick="add('*')" title="Multiply">×</button>
+          <button onclick="add('1')" title="Enter 1">1</button>
+          <button onclick="add('2')" title="Enter 2">2</button>
+          <button onclick="add('3')" title="Enter 3">3</button>
+          <button onclick="add('-')" title="Subtract">−</button>
+          <button onclick="clearAll()" title="Clear the current calculation">C</button>
+          <button onclick="add('0')" title="Enter 0">0</button>
+          <button class="equal" onclick="calculate()" title="Calculate the result">=</button>
+          <button onclick="add('+')" title="Add">+</button>
+        </div>
+        <div class="choice-area" id="choiceArea"></div>
+      </div>
+
+    </section>
+<section class="info-section" id="guide">
+      <h2>How to use this online calculator</h2>
+      <p>This calculator is designed for quick arithmetic. Select the number buttons and operation buttons, then press <strong>=</strong> to calculate. Press <strong>C</strong> to clear the display and start again.</p>
+
+      <div class="info-grid">
+        <article class="info-card">
+          <h3>➕ Addition</h3>
+          <p>Add two or more numbers together.</p>
+          <p><strong>Example:</strong> 12 + 8 = 20</p>
+        </article>
+        <article class="info-card">
+          <h3>➖ Subtraction</h3>
+          <p>Find the difference between numbers.</p>
+          <p><strong>Example:</strong> 15 − 6 = 9</p>
+        </article>
+        <article class="info-card">
+          <h3>✖️ Multiplication</h3>
+          <p>Multiply one number by another.</p>
+          <p><strong>Example:</strong> 7 × 4 = 28</p>
+        </article>
+        <article class="info-card">
+          <h3>➗ Division</h3>
+          <p>Divide a number into equal parts.</p>
+          <p><strong>Example:</strong> 20 ÷ 5 = 4</p>
+        </article>
+      </div>
+
+      <h3>Worked examples</h3>
+      <p><strong>Example 1: 18 + 24</strong><br>Enter 18, press +, enter 24, and press =. The result is 42.</p>
+      <p><strong>Example 2: 9 × 6</strong><br>Enter 9, press ×, enter 6, and press =. The result is 54.</p>
+      <p><strong>Example 3: 30 ÷ 3</strong><br>Enter 30, press ÷, enter 3, and press =. The result is 10.</p>
+
+      <h3>Normal mode and Choose Answer mode</h3>
+      <p><strong>Normal:</strong> calculates and displays the result. <strong>Choose Answer:</strong> turns the result into a small multiple-choice challenge. Pick the answer you think is correct. This is a casual practice feature, not a formal assessment.</p>
+
+      <h3>Button hints and hidden features</h3>
+      <ul>
+        <li>Hover over calculator buttons on a computer to see a short hint.</li>
+        <li>Move your pointer to the <strong>top-left corner</strong> to reveal the SECRET button. The password prompt includes a hint.</li>
+        <li>Hover near the <strong>middle of the left edge</strong> to reveal the ??? link.</li>
+        <li>Hover at the <strong>top-right corner</strong> to reveal NOCLIP.</li>
+        <li>Hover at the <strong>bottom-left corner</strong> to reveal EMU OS.</li>
+        <li>The <strong>CLICK</strong> button opens a clearly labeled fictional prank screen.</li>
+        <li><strong>WIN10 UPDATE</strong> opens an external simulation in an embedded frame. Some websites may block embedding.</li>
+      </ul>
+      <p class="tip"><strong>Password hint:</strong> The secret password is already set in this page's JavaScript code. This is only a fun browser-side secret, not secure password protection; anyone who can inspect the page source may be able to find it.</p>
+
+      <h3>Frequently asked questions</h3>
+      <p><strong>Is this calculator free?</strong><br>Yes. You can use it in your browser without installing an app.</p>
+      <p><strong>Why does an embedded page sometimes stay blank?</strong><br>Some external websites prevent other sites from displaying them inside an iframe. That restriction is controlled by the external website.</p>
+      <p><strong>Does the fake loss prank charge real money?</strong><br>No. The prank screen is fictional and does not process payments.</p>
+      <p><strong>Can I use this calculator on a phone?</strong><br>The layout adapts to smaller screens, though the calculator is best used with a modern browser.</p>
+
+      <h3>About this website</h3>
+      <p>Smooth Wave Calculator is a small browser-based calculator project made for simple arithmetic and playful hidden interactions. The page combines a calculator, animated background, learning examples, and optional prank-style features.</p>
+      <p><strong>Credits:</strong> AMD • HTML Development • Made in Visual Studio.</p>
+      <p><strong>Reupload credit:</strong> This page identifies itself as a reuploaded project associated with HTML Development and the original calculatortroll.com website. Use original code and media, or make sure you have permission to reuse them.</p>
+      <p><strong>Privacy note:</strong> This calculator does not need an account to perform calculations. If advertising or third-party embedded content is enabled, those services may use their own cookies or collect data under their own policies. Add a complete privacy policy that accurately describes the services you actually use before applying for advertising.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Credits: AMD • HTML Development • Made in Visual Studio</p>
+    <p>Calculator examples are educational. Always check important calculations independently.</p>
+  </footer>
+
+  <a href="https://www.tiktok.com/@morbthemagiclord/video/7642807979388964110" target="_blank" rel="noopener noreferrer" class="secret-button" aria-label="Secret button" title="Hidden link">???</a>
+  <div class="edge-trigger" id="edgeTrigger" aria-hidden="true"></div>
+
+  <button id="noclipBtn" class="corner-btn" title="Open the Noclip website in fullscreen" style="display: none;">NOCLIP</button>
+  <button id="emuBtn" class="corner-btn" title="Open Emupedia in fullscreen">EMU OS</button>
+  <button id="prankxBtn" class="corner-btn" title="Open the Windows 10 update simulation">WIN10 UPDATE</button>
+
+  <div id="noclipOverlay" class="fullscreen-overlay">
+    <iframe id="noclipFrame" src="" title="Noclip website" allow="fullscreen"></iframe>
+    <button id="noclipClose" class="exit-btn">EXIT</button>
+  </div>
+  <div id="emuOverlay" class="fullscreen-overlay">
+    <iframe id="emuFrame" src="" title="Emupedia" allow="fullscreen"></iframe>
+    <button id="emuClose" class="exit-btn">EXIT</button>
+  </div>
+  <div id="prankxOverlay" class="fullscreen-overlay">
+    <iframe id="prankxFrame" src="" title="Windows update simulation" allow="fullscreen"></iframe>
+    <button id="prankxClose" class="exit-btn">EXIT</button>
+  </div>
+
+  <div class="overlay" id="passwordOverlay">
+    <div class="modal">
+      <h3>Enter password</h3>
+      <p class="tip">Hint: the password is already written in this page's JavaScript.</p>
+      <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="off">
+      <button onclick="checkPassword()">Unlock</button>
+      <button onclick="closePassword()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="videoOverlay">
+    <div class="modal">
+      <h3>Oh nice computer 😄</h3>
+      <video id="marioVideo" autoplay="" controls="">
+        <source src="mario-oh-nice-computer.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <button onclick="closeVideo()">Close</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="fakeOverlay">
+    <div class="modal">
+      <span class="badge">FAKE • PRANK</span>
+      <h3 style="margin-top:8px;">You lost $50 😜</h3>
+      <div class="fake-card">
+        <strong>FAKE • PRANK</strong><br>
+        This is a harmless joke.<br>
+        No payment required.<br>
+        No data is real.<br><br>
+        VISA (fake): **** **** **** 1034<br>
+        EXP: **/** &nbsp; CVV: ***<br>
+        NAME: J*** D***<br>
+        STATUS: CENSORED
+      </div>
+      <button onclick="closeFake()">OK</button>
+    </div>
+  </div>
+
+  <p class="credit">AMD • HTML Development • Made in Visual Studio</p>
+
+  <script src="https://pagead2.googlesyndication.com/pagead/managed/js/adsense/m202610230101/show_ads_impl_fy2021.js" fetchpriority="high"></script><script>
+    const display = document.getElementById('display');
+    const normalBtn = document.getElementById('normalBtn');
+    const choiceBtn = document.getElementById('choiceBtn');
+    const choiceArea = document.getElementById('choiceArea');
+    const wave = document.getElementById('wave');
+    const hotspot = document.getElementById('hotspot');
+    const secretBtn = document.getElementById('secretBtn');
+    const passwordOverlay = document.getElementById('passwordOverlay');
+    const videoOverlay = document.getElementById('videoOverlay');
+    const passwordInput = document.getElementById('passwordInput');
+    const marioVideo = document.getElementById('marioVideo');
+    const rightBtn = document.getElementById('rightBtn');
+    const fakeOverlay = document.getElementById('fakeOverlay');
+    let mode = 'normal';
+
+    function add(value) {
+      if (display.textContent === '0' || display.textContent === 'Error') display.textContent = '';
+      display.textContent += value;
+    }
+    function clearAll() { display.textContent = '0'; choiceArea.style.display = 'none'; }
+    function calculate() {
+      try {
+        const expression = display.textContent;
+        if (!/^[0-9+\-*/().\s]+$/.test(expression)) throw new Error('Invalid input');
+        const result = Function('"use strict"; return (' + expression + ')')();
+        if (!Number.isFinite(result)) throw new Error('Invalid result');
+        if (mode === 'normal') display.textContent = String(Number(result.toFixed(10)));
+        else showChoices(Number(result.toFixed(10)));
+      } catch {
+        display.textContent = 'Error';
+      }
+    }
+    function showChoices(correct) {
+      choiceArea.innerHTML = '';
+      choiceArea.style.display = 'block';
+      const options = [...new Set([correct, correct + 3, correct - 2])];
+      while (options.length < 3) options.push(correct + options.length + 4);
+      options.sort(() => Math.random() - 0.5);
+      options.forEach(answer => {
+        const button = document.createElement('button');
+        button.textContent = answer;
+        button.onclick = () => {
+          display.textContent = answer === correct ? '✅ Correct!' : '❌ Wrong';
+        };
+        choiceArea.appendChild(button);
+      });
+    }
+    normalBtn.onclick = () => {
+      mode = 'normal';
+      normalBtn.classList.add('active');
+      choiceBtn.classList.remove('active');
+      choiceArea.style.display = 'none';
+    };
+    choiceBtn.onclick = () => {
+      mode = 'choice';
+      choiceBtn.classList.add('active');
+      normalBtn.classList.remove('active');
+      clearAll();
+    };
+    window.addEventListener('mousemove', event => {
+      const x = (event.clientX / window.innerWidth - 0.5) * 30;
+      const y = (event.clientY / window.innerHeight - 0.5) * 30;
+      wave.style.transform = `translate(${x}px, ${y}px)`;
+      const secretLink = document.querySelector('.secret-button');
+      if (event.clientX <= 15 && event.clientY >= window.innerHeight * 0.4 && event.clientY <= window.innerHeight * 0.6) {
+        secretLink.classList.add('revealed');
+      } else if (!secretLink.matches(':hover') && !secretLink.matches(':focus-visible')) {
+        secretLink.classList.remove('revealed');
+      }
+    });
+    hotspot.addEventListener('mouseenter', () => secretBtn.style.display = 'block');
+    hotspot.addEventListener('mouseleave', () => {
+      if (!secretBtn.matches(':hover')) secretBtn.style.display = 'none';
+    });
+    secretBtn.addEventListener('mouseenter', () => secretBtn.style.display = 'block');
+    secretBtn.addEventListener('click', () => {
+      passwordOverlay.style.display = 'flex';
+      passwordInput.value = '';
+      passwordInput.focus();
+    });
+    passwordInput.addEventListener('keydown', event => { if (event.key === 'Enter') checkPassword(); });
+    function checkPassword() {
+      if (passwordInput.value === 'password') {
+        passwordOverlay.style.display = 'none';
+        videoOverlay.style.display = 'flex';
+        marioVideo.currentTime = 0;
+        marioVideo.play().catch(() => {});
+      } else alert('Wrong password');
+    }
+    function closePassword() { passwordOverlay.style.display = 'none'; }
+    function closeVideo() { marioVideo.pause(); videoOverlay.style.display = 'none'; }
+    rightBtn.onclick = () => { fakeOverlay.style.display = 'flex'; };
+    function closeFake() { fakeOverlay.style.display = 'none'; }
+
+    function showOverlay(overlay, frame, url) {
+      frame.src = url;
+      overlay.style.display = 'block';
+      if (overlay.requestFullscreen) overlay.requestFullscreen().catch(() => {});
+    }
+    function closeOverlay(overlay, frame) {
+      overlay.style.display = 'none';
+      frame.src = '';
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    }
+
+    const noclipBtn = document.getElementById('noclipBtn');
+    const noclipOverlay = document.getElementById('noclipOverlay');
+    const noclipFrame = document.getElementById('noclipFrame');
+    const noclipClose = document.getElementById('noclipClose');
+    const emuBtn = document.getElementById('emuBtn');
+    const emuOverlay = document.getElementById('emuOverlay');
+    const emuFrame = document.getElementById('emuFrame');
+    const emuClose = document.getElementById('emuClose');
+    const prankxBtn = document.getElementById('prankxBtn');
+    const prankxOverlay = document.getElementById('prankxOverlay');
+    const prankxFrame = document.getElementById('prankxFrame');
+    const prankxClose = document.getElementById('prankxClose');
+
+    const noclipZone = document.createElement('div');
+    noclipZone.style.cssText = 'position:fixed;top:0;right:0;width:60px;height:60px;z-index:998;';
+    noclipZone.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(noclipZone);
+    noclipZone.addEventListener('mouseenter', () => noclipBtn.style.display = 'block');
+    noclipZone.addEventListener('mouseleave', () => {
+      if (!noclipBtn.matches(':hover')) noclipBtn.style.display = 'none';
+    });
+    noclipBtn.addEventListener('mouseenter', () => noclipBtn.style.display = 'block');
+    noclipBtn.addEventListener('click', () => showOverlay(noclipOverlay, noclipFrame, 'https://noclip.website/#smg2/WorldMap01Galaxy;ShareData=APT&)UT]PvUSV~u9h(:i-JxRX5!r5IUr{P*UIe3gW2~UpUgi9v9QpIZUQjhvWqb'));
+    noclipClose.onclick = () => closeOverlay(noclipOverlay, noclipFrame);
+
+    const emuZone = document.createElement('div');
+    emuZone.style.cssText = 'position:fixed;bottom:0;left:0;width:60px;height:60px;z-index:998;';
+    emuZone.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(emuZone);
+    emuZone.addEventListener('mouseenter', () => emuBtn.style.display = 'block');
+    emuZone.addEventListener('mouseleave', () => {
+      if (!emuBtn.matches(':hover')) emuBtn.style.display = 'none';
+    });
+    emuBtn.addEventListener('mouseenter', () => emuBtn.style.display = 'block');
+    emuBtn.addEventListener('click', () => showOverlay(emuOverlay, emuFrame, 'https://emupedia.net/beta/emuos/'));
+    emuClose.onclick = () => closeOverlay(emuOverlay, emuFrame);
+
+    prankxBtn.addEventListener('click', () => showOverlay(prankxOverlay, prankxFrame, 'https://pranx.com/win10-update/'));
+    prankxClose.onclick = () => closeOverlay(prankxOverlay, prankxFrame);
+
+    document.querySelectorAll('.overlay').forEach(overlay => {
+      overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+          if (overlay === videoOverlay) closeVideo();
+          else if (overlay === fakeOverlay) closeFake();
+          else if (overlay === passwordOverlay) closePassword();
+        }
+      });
+    });
+  </script><div aria-hidden="true" style="position: fixed; top: 0px; right: 0px; width: 60px; height: 60px; z-index: 998;"></div><div aria-hidden="true" style="position: fixed; bottom: 0px; left: 0px; width: 60px; height: 60px; z-index: 998;"></div>
+
+  
+
+  
+</body></html>
